@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" th:replace="~{fragments/layout :: layout (~{::body},'index')}">
+<link rel="stylesheet" type="text/css" href="/stylesheets/checkout.css"/>
+<body>
+<script th:src="@{/webjars/jquery/jquery.min.js}"></script>
+<script th:src="@{/webjars/jquery-ui/jquery-ui.min.js}"></script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.min.js}"></script>
+
+<div style="background: cornflowerblue; font-family: 'Arial Rounded MT Bold'; font-size: xx-large; text-align: center;">
+    <h1><u>Dal-Cart</u></h1>
+</div>
+
+<div class="topnav" style="padding-bottom: 50px; padding-left: 100px">
+    <a href="/home">
+        <button class="btn btn-primary" id="btn2">Go to home</button>
+    </a>
+</div>
+
+<div class = container admin-container>
+    <form>
+        <div class="row">
+            <div class="container ">
+                <div class="row">
+                    <div class="col-lg-12 center text-center admin-title">
+                        My Cart
+                    </div>
+                </div>
+
+                <div>
+                    <h1><span th:text="${message}"></span></h1>
+                </div>
+
+                <div>
+                    <h1><span th:text="${Error}"></span></h1>
+                </div>
+
+                <div class="row product-list-header">
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Product Name
+                    </div>
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Product Price
+                    </div>
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Product Quantity
+                    </div>
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Increase Quantity
+                    </div>
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Decrease Quantity
+                    </div>
+                    <div class="col-lg-2 text-center product-list-header-item">
+                        Remove from cart
+                    </div>
+                </div>
+                <div class="row product-list-row text-center product-row" th:each="product: ${products}">
+                    <div class="col-lg-2 flex" th:text="${product.productName}"></div>
+                    <div class="col-lg-2 flex" th:text="${product.productPrice}"></div>
+                    <div class="col-lg-2 flex" th:text="${quantity.get(product.productId)}"></div>
+                    <div class="col-lg-2 flex">
+                        <button th:value="${quantity.get(product.productId)}" th:id="${product.productId}" type="submit"
+                                onclick="increase(this.id,this.value)">+
+                        </button>
+                    </div>
+                    <div class="col-lg-2 flex">
+                        <button th:value="${quantity.get(product.productId)}" th:id="${product.productId}" type="submit"
+                                onclick="decrease(this.id,this.value)">-
+                        </button>
+                    </div>
+                    <div class="col-lg-2 flex">
+                        <button th:id="${product.productId}" type="submit" onclick="removeFromCart(this.id)">Remove
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<div style="padding-left: 650px">
+    <h2>Total : <span th:text="${total}"></span></h2>
+</div>
+
+<hr style="width:100%;text-align:center;margin-left:0">
+
+<div class="container">
+    <div class="row d-flex align-items-center justify-content-center address-header-div">
+        <span class="address-header-text">Delivery Address</span>
+    </div>
+    <form class="submit-order">
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" class="form-control" id="fullname"  placeholder="Full Name" name="fullname" required>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="text" class="form-control" id="email" placeholder="Email" name="email" required>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label>Address</label>
+                    <input type="text" class="form-control" id="address" name="address" placeholder="Enter Your Address">
+                    </input>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="form-group">
+                    <label >Mobile Number</label>
+                    <input type="number" class="form-control" id="phone" placeholder="Mobile Number" name="phone" required>
+                </div>
+            </div>
+        </div>
+
+        <hr style="width:100%;text-align:center;margin-left:0">
+
+        <div class="row d-flex align-items-center justify-content-center address-header-div">
+            <span class="address-header-text">Payment Details</span>
+            <div id = "container">
+                <div id = "box">
+                    <div class = "hide" id = "sub">
+                        <label>CASH</label> <input type="radio" id="cash" name="payment"/>
+                    </div>
+                    <div id = "su![](../../public/lang-logo.png)bs">
+                        <label>CREDIT/DEBIT</label>
+                        <input class = "hide" type="radio" id="card" name = "payment" checked/>
+                        <div id = "info">
+                            <label>Card Number:  </label><input type="text" id="cardnumber" name="cardnumber"/>
+                            <label>Expiry date:  </label><input type="text" placeholder="MM/YYYYY" id = "expirydate" name="expiry"/>
+                            <label>CVV:   </label><input type="text" id="cvv" size="20" placeholder="XXX" name="cvv"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div id = "buttonbox">
+                    <input type="submit" value = "PLACE ORDER"/>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+
+<script type="text/javascript">
+
+    function increase(event, data) {
+        fetch(`/increaseQuantityOfProduct?id=${event}&quantity=${data}`,
+            {
+                method: 'POST',
+            }).then(response => {console.log(response.json())});
+
+    }
+
+    function decrease(event, data) {
+        fetch(`/decreaseQuantityOfProduct?id=${event}&quantity=${data}`,
+            {
+                method: 'POST',
+            }).then(response => {console.log(response.json())});
+    }
+
+    function removeFromCart(event) {
+        fetch(`/removeFromCart?id=${event}`,
+            {
+                method: 'POST',
+            }).then(response => {console.log(response.json())});
+    }
+
+    $(".submit-order").on("submit", function (e) {
+        e.preventDefault();
+        var dataString = $(this).serialize();
+            $.ajax({
+                type: "POST",
+                url: "/order/submit_order",
+                data: dataString,
+                success: function (data) {
+
+                    if (data == 'Success') {
+                        $(this).css("display", "none");
+                        window.location = "/thankyou"
+                    } else if (data == 'PaymentFailure') {
+                        alert("Order Cannot Be Placed, Card Details are incorrect. Please Try Again..");
+                        return false;
+                    } else if (data == 'AddressFailure') {
+                        alert("Order Cannot Be Placed, Delivery Details are incorrect. Please Try Again..");
+                        return false;
+                    } else {
+                        alert("Order Cannot Be Placed, Please Try Again Later..");
+                    }
+                },
+                error: function (request, status, error){
+                    window.location = "/thankyou"
+                }
+            });
+    });
+</script>
+</body>
+</html>
+
+
+
